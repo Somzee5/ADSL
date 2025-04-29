@@ -1,0 +1,21 @@
+LOAD CSV WITH HEADERS FROM 'file:///citations.csv' AS row
+WITH row
+LIMIT 1000
+MATCH (citing:Paper {paper_id: row.citing_paper_id})
+MATCH (cited:Paper {paper_id: row.cited_paper_id})
+MERGE (citing)-[:CITES]->(cited)
+
+
+
+MATCH (p1:Paper)-[:CITES]->(p2:Paper)
+RETURN p1.title AS citingTitle, p2.title AS citedTitle, p1.paper_id AS citingId, p2.paper_id AS citedId;
+
+
+
+LOAD CSV WITH HEADERS FROM 'file:///papers.csv' AS row
+WITH row WHERE row.paper_id IS NOT NULL AND trim(row.paper_id) <> '' AND trim(row.title) <> ''
+LIMIT 1000
+MERGE (p:Paper {paper_id: row.paper_id})
+SET p.title = row.title,
+    p.year = row.year,
+    p.publisher = row.publisher

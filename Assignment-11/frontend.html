@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Research Paper Citation Lookup</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f3f3f3;
+      padding: 2rem;
+      max-width: 600px;
+      margin: auto;
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    input, button {
+      padding: 10px;
+      margin-top: 10px;
+      width: 100%;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background-color: #1e60f2;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #1a4ed8;
+    }
+
+    #results {
+      margin-top: 20px;
+      background-color: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <h2>Research Paper Citation Lookup</h2>
+  <input type="text" id="paperIdInput" placeholder="Enter Paper ID (e.g., 201)">
+  <button onclick="fetchCitations()">Get Citations</button>
+
+  <div id="results"></div>
+
+  <script>
+    async function fetchCitations() {
+    const paperId = document.getElementById('paperIdInput').value.trim();
+    const resultDiv = document.getElementById('results');
+    resultDiv.innerHTML = '';
+
+    try {
+      const res = await fetch(`http://localhost:3000/citations/${paperId}`);
+      let data = await res.json();
+
+      // Remove duplicates based on paper_id
+      const seen = new Set();
+      const uniqueData = data.filter(paper => {
+        if (!seen.has(paper.paper_id)) {
+          seen.add(paper.paper_id);
+          return true;
+        }
+        return false;
+      });
+
+      resultDiv.innerHTML = '<h3>Cited Papers:</h3>' + (uniqueData.length > 0
+        ? '<ul>' + uniqueData.map(p => `<li><strong>${p.paper_id}</strong>: ${p.title}</li>`).join('') + '</ul>'
+        : '<p>No citations found.</p>');
+
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      resultDiv.innerHTML = "<p style='color:red;'>Error fetching citations. Please try again later.</p>";
+    }
+  }
+  </script>
+</body>
+</html>
