@@ -1,0 +1,56 @@
+🧾 1. Create 10,000 Random Points Across India
+cypher
+Copy
+Edit
+UNWIND range(1, 10000) AS id
+CREATE (:Place {
+  name: 'Place_' + id,
+  location: point({
+    latitude: 8 + rand() * 22,     // Latitude range ~8 to 30
+    longitude: 68 + rand() * 30    // Longitude range ~68 to 98
+  })
+});
+🧾 2. Query Places Within 50 km of a Specific Point (e.g., Delhi)
+cypher
+Copy
+Edit
+WITH point({latitude: 28.61, longitude: 77.20}) AS targetPoint
+MATCH (p:Place)
+WHERE point.distance(p.location, targetPoint) < 50000
+RETURN p.name, point.distance(p.location, targetPoint) AS dist
+ORDER BY dist ASC
+LIMIT 10;
+🧾 3. Query Places Within 1 km of a Random Place Node
+cypher
+Copy
+Edit
+MATCH (target:Place)
+WITH target, target.location AS targetPoint
+MATCH (p:Place)
+WHERE p <> target AND point.distance(p.location, targetPoint) < 1000
+RETURN target.name AS Center, p.name, point.distance(p.location, targetPoint) AS dist
+ORDER BY dist ASC
+LIMIT 10;
+🧾 4. Create 100 Points Near Delhi (Clustered for Testing)
+cypher
+Copy
+Edit
+UNWIND range(1, 100) AS id
+CREATE (:Place {
+  name: 'DelhiNearby_' + id,
+  location: point({
+    latitude: 28.61 + rand() * 0.02,
+    longitude: 77.20 + rand() * 0.02
+  })
+});
+This creates a tight cluster of points near Delhi (within ~2 km radius).
+
+🧾 5. Find Nearest Node to a Specific Location
+cypher
+Copy
+Edit
+WITH point({latitude: 28.61, longitude: 77.20}) AS targetPoint
+MATCH (p:Place)
+RETURN p.name, point.distance(p.location, targetPoint) AS dist
+ORDER BY dist ASC
+LIMIT 1;
